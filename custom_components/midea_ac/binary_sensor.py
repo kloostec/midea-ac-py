@@ -39,11 +39,18 @@ async def async_setup_entry(
                                           "filter_alert"
                                           ))
 
-    if hasattr(device, "self_clean_active") and getattr(device, "supports_self_clean", False):
+    if (hasattr(device, "self_clean_active")
+            and (getattr(device, "supports_self_clean", False)
+                 or getattr(device, "supports_automatic_cleaning", False))):
+        translation_key = (
+            "cleaning_cycle"
+            if getattr(device, "supports_automatic_cleaning", False)
+            else "self_clean"
+        )
         entities.append(MideaBinarySensor(coordinator,
                                           "self_clean_active",
                                           BinarySensorDeviceClass.RUNNING,
-                                          "self_clean",
+                                          translation_key,
                                           entity_category=EntityCategory.DIAGNOSTIC,
                                           ))
 

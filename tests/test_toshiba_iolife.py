@@ -105,28 +105,28 @@ async def test_toshiba_climate_configuration(
     assert "follow_me" not in entity.extra_state_attributes
 
 
-async def test_self_clean_method_switch() -> None:
-    """The Toshiba cleaning switch calls both control methods."""
+async def test_automatic_cleaning_method_switch() -> None:
+    """The Toshiba auto-clean switch calls both preference methods."""
     device = MagicMock()
     device.id = 1234
-    device.self_clean_active = False
-    device.start_self_clean = AsyncMock()
-    device.stop_self_clean = AsyncMock()
+    device.automatic_cleaning_enabled = False
+    device.enable_automatic_cleaning = AsyncMock()
+    device.disable_automatic_cleaning = AsyncMock()
     coordinator = MagicMock()
     coordinator.device = device
     coordinator.async_request_refresh = AsyncMock()
 
     entity = MideaMethodSwitch(
         coordinator,
-        "self_clean_active",
-        "start_self_clean",
-        "stop_self_clean",
-        "self_clean",
+        "automatic_cleaning_enabled",
+        "enable_automatic_cleaning",
+        "disable_automatic_cleaning",
+        "automatic_cleaning",
     )
 
     await entity.async_turn_on()
-    device.start_self_clean.assert_awaited_once()
+    device.enable_automatic_cleaning.assert_awaited_once()
 
     await entity.async_turn_off()
-    device.stop_self_clean.assert_awaited_once()
+    device.disable_automatic_cleaning.assert_awaited_once()
     assert coordinator.async_request_refresh.await_count == 2

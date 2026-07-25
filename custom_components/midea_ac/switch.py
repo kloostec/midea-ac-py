@@ -67,15 +67,15 @@ async def async_setup_entry(
                                             True: device.PurifierMode.ON,
                                         }))
 
-    if (hasattr(device, "start_self_clean")
-            and hasattr(device, "stop_self_clean")
-            and getattr(device, "supports_self_clean", False)):
+    if (hasattr(device, "enable_automatic_cleaning")
+            and hasattr(device, "disable_automatic_cleaning")
+            and getattr(device, "supports_automatic_cleaning", False)):
         entities.append(MideaMethodSwitch(
             coordinator,
-            "self_clean_active",
-            "start_self_clean",
-            "stop_self_clean",
-            "self_clean",
+            "automatic_cleaning_enabled",
+            "enable_automatic_cleaning",
+            "disable_automatic_cleaning",
+            "automatic_cleaning",
             entity_category=EntityCategory.CONFIG,
         ))
 

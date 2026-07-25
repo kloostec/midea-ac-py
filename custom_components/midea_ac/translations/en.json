@@ -197,6 +197,9 @@
       }
     },
     "binary_sensor": {
+      "cleaning_cycle": {
+        "name": "Cleaning cycle"
+      },
       "filter_alert": {
         "name": "Filter alert"
       },
@@ -347,8 +350,8 @@
       "purifier": {
         "name": "Purifier"
       },
-      "self_clean": {
-        "name": "Self clean"
+      "automatic_cleaning": {
+        "name": "Automatic cleaning"
       }
     }
   }

@@ -1,6 +1,9 @@
 {
   "entity": {
     "binary_sensor": {
+      "cleaning_cycle": {
+        "default": "mdi:spray-bottle"
+      },
       "self_clean": {
         "default": "mdi:spray-bottle"
       }
@@ -84,7 +87,7 @@
           "off": "mdi:minus-circle-outline"
         }
       },
-      "self_clean": {
+      "automatic_cleaning": {
         "default": "mdi:spray-bottle"
       }
     }

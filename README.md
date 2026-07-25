@@ -81,7 +81,7 @@ The integration exposes the capabilities confirmed on RAS-J221DTBK(W) and
 RAS-K221DRBK(W): heating, cooling, auto, dry and fan modes; target and indoor
 temperature; humidity; all fan speeds; horizontal/vertical sweep; eco;
 purifier; breezeless mode; 50% rate selection; filter state; and a cleaning
-toggle with running-state feedback.
+preference that runs after shutdown, with separate running-state feedback.
 
 Display state is readable, but these adapters ignore display writes, so a
 display switch is not created. Unsupported Midea-only entities such as sleep,
