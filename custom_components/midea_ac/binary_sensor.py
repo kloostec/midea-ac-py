@@ -47,7 +47,9 @@ async def async_setup_entry(
                                           entity_category=EntityCategory.DIAGNOSTIC,
                                           ))
 
-    if hasattr(device, "defrost_active") and hasattr(device, "enable_group5_data_requests"):
+    if (hasattr(device, "defrost_active")
+            and hasattr(device, "enable_group5_data_requests")
+            and not getattr(device, "is_toshiba_iolife", False)):
         entities.append(MideaGroup5BinarySensor(coordinator,
                                                 "defrost_active",
                                                 BinarySensorDeviceClass.RUNNING,

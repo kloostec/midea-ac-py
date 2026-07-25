@@ -15,6 +15,7 @@ A device is likely supported if it uses one of the following Android apps or it'
 * NetHome Plus (com.midea.aircondition)
 * SmartHome/MSmartHome (com.midea.ai.overseas)
 * Toshiba AC NA (com.midea.toshiba)
+* Toshiba IoLIFE Japan (`Toshiba_ac_*` local adapters)
 * 美的美居 (com.midea.ai.appliances)
 
 __Note: Only air conditioner devices (type 0xAC and 0xCC) are supported.__ 
@@ -69,6 +70,22 @@ _However_, for newer "V3" devices, the Midea Cloud is used to acquire a token & 
   * Indoor humidity sensor
   * Target humidity in Dry mode
   * Auxiliary heating mode
+
+### Toshiba IoLIFE Features
+
+Japanese Toshiba IoLIFE adapters use Midea V3 LAN authentication but Toshiba
+appliance commands. They are represented by the Toshiba IoLIFE device protocol
+while retaining device type `0xAC`.
+
+The integration exposes the capabilities confirmed on RAS-J221DTBK(W) and
+RAS-K221DRBK(W): heating, cooling, auto, dry and fan modes; target and indoor
+temperature; humidity; all fan speeds; horizontal/vertical sweep; eco;
+purifier; breezeless mode; 50% rate selection; filter state; and a cleaning
+toggle with running-state feedback.
+
+Display state is readable, but these adapters ignore display writes, so a
+display switch is not created. Unsupported Midea-only entities such as sleep,
+turbo, follow-me, energy statistics, and auxiliary heat are also omitted.
 
 ## Translations
 Thanks to the community the integration is available in the following languages.
@@ -142,9 +159,14 @@ Name | Description | Required | Example
 **ID** | Device ID | Yes | 123456789012345
 **Host** | Device IP address | Yes | 192.168.1.100
 **Port** | Device port | Yes | 6444
-**Device Type** | Device type | Yes | AC
+**Device Type** | Device protocol/type | Yes | AC, CC, or TOSHIBA_IOLIFE
 **Token** | Device token | For V3 devices | ACEDDA53831AE5DC... (128 character hexadecimal string)
 **Key** | Device key | For V3 devices | CFFA10FC... (64 character hexadecimal string)
+
+For a Japanese Toshiba adapter, select `TOSHIBA_IOLIFE`. Discovery recognizes
+adapters whose advertised name starts with `Toshiba_ac_` and persists this
+protocol choice so the correct msmart-ng subclass is reconstructed after every
+Home Assistant restart.
 
 ## Integration Options
 Additional options are available to tweak integration behavior per device. The available options depend on the device type.

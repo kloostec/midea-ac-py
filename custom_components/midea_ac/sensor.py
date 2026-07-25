@@ -62,7 +62,8 @@ async def async_setup_entry(
         ))
 
     # Only add energy sensors if device supports energy requests
-    if hasattr(device, "enable_energy_usage_requests"):
+    if (hasattr(device, "enable_energy_usage_requests")
+            and not getattr(device, "is_toshiba_iolife", False)):
         def _get_energy_config(key: str) -> tuple[EnergyFormat, float]:
             config = config_entry.options.get(key)
             format = device.EnergyDataFormat.get_from_name(
@@ -114,7 +115,9 @@ async def async_setup_entry(
                 )
             ])
 
-    if hasattr(device, "outdoor_fan_speed") and hasattr(device, "enable_group5_data_requests"):
+    if (hasattr(device, "outdoor_fan_speed")
+            and hasattr(device, "enable_group5_data_requests")
+            and not getattr(device, "is_toshiba_iolife", False)):
         entities.append(MideaGroup5Sensor(
             coordinator,
             "outdoor_fan_speed",

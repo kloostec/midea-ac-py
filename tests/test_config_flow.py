@@ -221,7 +221,7 @@ async def test_manual_flow_cant_connect_v2(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_selected_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=False)
@@ -258,7 +258,7 @@ async def test_manual_flow_cant_connect_v3(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_selected_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=False)
@@ -298,7 +298,7 @@ async def test_manual_flow_cant_authenticate(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that fails to authenticate
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_selected_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock(side_effect=AuthenticationError)
         device.refresh = AsyncMock()
@@ -338,7 +338,7 @@ async def test_manual_flow_unsupported_device(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that is online but unsupported
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_selected_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=True)
@@ -569,7 +569,7 @@ async def test_reconfigure_flow_cant_connect_v2(
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock()
         device.refresh = AsyncMock()
@@ -621,7 +621,7 @@ async def test_reconfigure_flow_cant_connect_v3(
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock()
         device.refresh = AsyncMock()
@@ -675,7 +675,7 @@ async def test_reconfigure_flow_cant_authenticate(
     assert result
 
     # Patch construct to build a mock device that can't authenticate
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock(side_effect=AuthenticationError)
         device.refresh = AsyncMock()
@@ -730,7 +730,7 @@ async def test_reconfigure_flow_unsupported_device(
     assert result
 
     # Patch construct to build a mock device that is online but unsupported
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_ac.config_flow.construct_device", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=True)

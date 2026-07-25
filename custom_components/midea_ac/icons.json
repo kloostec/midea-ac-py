@@ -83,6 +83,9 @@
         "state": {
           "off": "mdi:minus-circle-outline"
         }
+      },
+      "self_clean": {
+        "default": "mdi:spray-bottle"
       }
     }
   }

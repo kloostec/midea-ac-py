@@ -52,14 +52,15 @@ async def async_setup_entry(
             MideaClimateACDevice(hass, coordinator, config_entry.options))
 
         # Add a service to control 'follow me' function
-        platform = entity_platform.async_get_current_platform()
-        platform.async_register_entity_service(
-            "set_follow_me",
-            {
-                vol.Required(CONF_ENABLED): cv.boolean,
-            },
-            "async_set_follow_me",
-        )
+        if not getattr(device, "is_toshiba_iolife", False):
+            platform = entity_platform.async_get_current_platform()
+            platform.async_register_entity_service(
+                "set_follow_me",
+                {
+                    vol.Required(CONF_ENABLED): cv.boolean,
+                },
+                "async_set_follow_me",
+            )
 
     elif device.type == DeviceType.COMMERCIAL_AC:
         entities.append(
@@ -159,12 +160,19 @@ class MideaClimateDevice(MideaCoordinatorEntity[MideaDevice], ClimateEntity, Gen
     @property
     def device_info(self) -> dict:
         """Return info for device registry."""
+        is_toshiba = getattr(
+            self._device, "is_toshiba_iolife", False)
         return {
             "identifiers": {
                 (DOMAIN, self._device.id)
             },
-            "name": f"Midea {self._device.type:X} {self._device.id}",
-            "manufacturer": "Midea",
+            "name": (
+                f"Toshiba IoLIFE {self._device.id}"
+                if is_toshiba
+                else f"Midea {self._device.type:X} {self._device.id}"
+            ),
+            "manufacturer": "Toshiba" if is_toshiba else "Midea",
+            **({"model": "IoLIFE"} if is_toshiba else {}),
         }
 
     @property
@@ -400,7 +408,8 @@ class MideaClimateACDevice(MideaClimateDevice[AC]):
         preset_modes = [
             p for p, cond in [
                 (PRESET_NONE, True),  # Always supported
-                (PRESET_SLEEP, True),  # Always supported
+                (PRESET_SLEEP,
+                 not getattr(device, "is_toshiba_iolife", False)),
                 (PRESET_AWAY, device.supports_freeze_protection),
                 (PRESET_ECO, device.supports_eco),
                 (PRESET_BOOST, device.supports_turbo),
@@ -444,16 +453,20 @@ class MideaClimateACDevice(MideaClimateDevice[AC]):
     def extra_state_attributes(self) -> dict[str, str]:
         """Return device specific state attributes."""
 
-        return {
-            "follow_me": f"{self._device.follow_me}",
+        attributes = {
             "error_code": f"{self._device.error_code}",
         }
+        if not getattr(self._device, "is_toshiba_iolife", False):
+            attributes["follow_me"] = f"{self._device.follow_me}"
+        return attributes
 
     async def _apply(self) -> None:
         """Apply changes to the device."""
         # Display on the AC should use the same unit as HA
-        self._device.fahrenheit = (
-            self.hass.config.units.temperature_unit == UnitOfTemperature.FAHRENHEIT)
+        if not getattr(self._device, "is_toshiba_iolife", False):
+            self._device.fahrenheit = (
+                self.hass.config.units.temperature_unit
+                == UnitOfTemperature.FAHRENHEIT)
 
         await super()._apply()
 
@@ -571,7 +584,8 @@ class MideaClimateACDevice(MideaClimateDevice[AC]):
         if self._device.operational_mode in [AC.OperationalMode.AUTO,
                                              AC.OperationalMode.COOL,
                                              AC.OperationalMode.HEAT]:
-            modes.append(PRESET_SLEEP)
+            if PRESET_SLEEP in self._preset_modes:
+                modes.append(PRESET_SLEEP)
 
             # Add turbo/boost if supported by the device
             if PRESET_BOOST in self._preset_modes:

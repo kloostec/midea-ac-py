@@ -31,8 +31,8 @@ async def async_setup_entry(
 
     # Create switches for supported features
     entities = []
-    if hasattr(device, "toggle_display"):
-        # TODO Check supports_display_control ?
+    if (hasattr(device, "toggle_display")
+            and getattr(device, "supports_display_control", False)):
         entities.append(MideaDisplaySwitch(coordinator))
 
     if hasattr(device, "breeze_away") and getattr(device, "supports_breeze_away", False):
@@ -66,6 +66,18 @@ async def async_setup_entry(
                                             False: device.PurifierMode.OFF,
                                             True: device.PurifierMode.ON,
                                         }))
+
+    if (hasattr(device, "start_self_clean")
+            and hasattr(device, "stop_self_clean")
+            and getattr(device, "supports_self_clean", False)):
+        entities.append(MideaMethodSwitch(
+            coordinator,
+            "self_clean_active",
+            "start_self_clean",
+            "stop_self_clean",
+            "self_clean",
+            entity_category=EntityCategory.CONFIG,
+        ))
 
     add_entities(entities)
 
@@ -206,3 +218,57 @@ class MideaSwitch(MideaCoordinatorEntity, SwitchEntity):
     async def async_turn_off(self) -> None:
         """Turn the switch off."""
         await self._set_state(False)
+
+
+class MideaMethodSwitch(MideaCoordinatorEntity, SwitchEntity):
+    """Switch backed by separate asynchronous on/off methods."""
+
+    def __init__(
+        self,
+        coordinator: MideaDeviceUpdateCoordinator,
+        state_property: str,
+        turn_on_method: str,
+        turn_off_method: str,
+        translation_key: str,
+        *,
+        entity_category: EntityCategory | None = None,
+    ) -> None:
+        super().__init__(coordinator)
+        self._state_property = state_property
+        self._turn_on_method = turn_on_method
+        self._turn_off_method = turn_off_method
+        self._attr_translation_key = translation_key
+        self._attr_entity_category = entity_category
+
+    @property
+    def device_info(self) -> dict:
+        """Return info for device registry."""
+        return {"identifiers": {(DOMAIN, self._device.id)}}
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Indicate that the entity follows entity naming conventions."""
+        return True
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of this entity."""
+        return f"{self._device.id}-{self._state_property}"
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return the switch state."""
+        return getattr(self._device, self._state_property, None)
+
+    async def _call(self, method_name: str) -> None:
+        method = getattr(self._device, method_name)
+        await method()
+        await self.coordinator.async_request_refresh()
+
+    async def async_turn_on(self) -> None:
+        """Turn the feature on."""
+        await self._call(self._turn_on_method)
+
+    async def async_turn_off(self) -> None:
+        """Turn the feature off."""
+        await self._call(self._turn_off_method)

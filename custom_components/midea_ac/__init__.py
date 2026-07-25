@@ -10,20 +10,20 @@ from homeassistant.const import (CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN,
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from msmart import __version__ as MSMART_VERSION
-from msmart.base_device import Device
 from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
 from msmart.device import CommercialAirConditioner as CC
 from msmart.lan import AuthenticationError
 
 from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_CAPABILITY_OVERRIDES,
-                    CONF_DEVICE_TYPE, CONF_ENERGY_DATA_FORMAT,
-                    CONF_ENERGY_DATA_SCALE, CONF_ENERGY_SENSOR, CONF_KEY,
-                    CONF_MAX_CONNECTION_LIFETIME,
+                    CONF_DEVICE_PROTOCOL, CONF_DEVICE_TYPE,
+                    CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
+                    CONF_ENERGY_SENSOR, CONF_KEY, CONF_MAX_CONNECTION_LIFETIME,
                     CONF_MERGE_CAPABILITY_OVERRIDES, CONF_POWER_SENSOR,
                     CONF_SHOW_ALL_PRESETS, CONF_USE_FAN_ONLY_WORKAROUND,
-                    CONF_WORKAROUNDS, DOMAIN, EnergyFormat)
+                    CONF_WORKAROUNDS, DOMAIN, DeviceProtocol, EnergyFormat)
 from .coordinator import MideaDeviceUpdateCoordinator
+from .device import construct_device
 
 _LOGGER = logging.getLogger(__name__)
 _PLATFORMS = [
@@ -45,16 +45,19 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     hass.data.setdefault(DOMAIN, {})
 
     device_type = config_entry.data[CONF_DEVICE_TYPE]
+    protocol = config_entry.data.get(
+        CONF_DEVICE_PROTOCOL, DeviceProtocol.MIDEA)
     id = config_entry.data[CONF_ID]
     host = config_entry.data[CONF_HOST]
     port = config_entry.data[CONF_PORT]
 
-    _LOGGER.info("Starting midea-ac-py for device type %02X ID %s (%s:%d). Using msmart-ng version %s.",
-                 device_type, id, host, port, MSMART_VERSION)
+    _LOGGER.info("Starting midea-ac-py for device type %02X protocol %s ID %s (%s:%d). Using msmart-ng version %s.",
+                 device_type, protocol, id, host, port, MSMART_VERSION)
 
     # Construct the device
-    device = Device.construct(
-        type=device_type,
+    device = construct_device(
+        device_type=device_type,
+        protocol=protocol,
         ip=host,
         port=port,
         device_id=int(id)
@@ -204,6 +207,17 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
             hass.config_entries.async_update_entry(
                 config_entry, options=new_options, minor_version=6)
+
+        # 1.6 -> 1.7: Persist the appliance protocol independently of type
+        if config_entry.minor_version == 6:
+            hass.config_entries.async_update_entry(
+                config_entry,
+                data={
+                    CONF_DEVICE_PROTOCOL: DeviceProtocol.MIDEA,
+                    **config_entry.data,
+                },
+                minor_version=7,
+            )
 
     _LOGGER.debug("Migration to configuration version %s.%s successful.",
                   config_entry.version, config_entry.minor_version)

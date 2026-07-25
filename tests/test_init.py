@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.midea_ac.const import (CONF_ADDITIONAL_OPERATION_MODES,
                                               CONF_CAPABILITY_OVERRIDES,
+                                              CONF_DEVICE_PROTOCOL,
                                               CONF_DEVICE_TYPE,
                                               CONF_ENERGY_DATA_FORMAT,
                                               CONF_ENERGY_DATA_SCALE,
@@ -19,7 +20,7 @@ from custom_components.midea_ac.const import (CONF_ADDITIONAL_OPERATION_MODES,
                                               CONF_SHOW_ALL_PRESETS,
                                               CONF_USE_FAN_ONLY_WORKAROUND,
                                               CONF_WORKAROUNDS, DOMAIN,
-                                              EnergyFormat)
+                                              DeviceProtocol, EnergyFormat)
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -67,7 +68,8 @@ async def test_config_entry_migration_from_5(hass: HomeAssistant) -> None:
 
     # Assert expected version
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
+    assert mock_config_entry.data[CONF_DEVICE_PROTOCOL] == DeviceProtocol.MIDEA
 
     # Grab options to test migration
     options = mock_config_entry.options
@@ -105,8 +107,9 @@ async def test_config_entry_migration_from_4(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
     assert mock_config_entry.data[CONF_DEVICE_TYPE] == DeviceType.AIR_CONDITIONER
+    assert mock_config_entry.data[CONF_DEVICE_PROTOCOL] == DeviceProtocol.MIDEA
 
 
 async def test_config_entry_migration_from_3(hass: HomeAssistant) -> None:
@@ -135,7 +138,7 @@ async def test_config_entry_migration_from_3(hass: HomeAssistant) -> None:
 
     # Assert expected version
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
 
     # Grab options to test migration
     options = mock_config_entry.options
@@ -208,7 +211,7 @@ async def test_config_entry_migration_from_3_energy_formats(
 
     # Assert expected version
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
 
     # Grab options to test migration
     options = mock_config_entry.options
@@ -258,7 +261,7 @@ async def test_config_entry_migration_from_2(
 
     # Assert expected version
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
 
     # Grab options to test migration
     options = mock_config_entry.options
@@ -293,5 +296,5 @@ async def test_config_entry_migration_from_1(hass: HomeAssistant) -> None:
         await hass.async_block_till_done()
 
     assert mock_config_entry.version == 1
-    assert mock_config_entry.minor_version == 6
+    assert mock_config_entry.minor_version == 7
     assert isinstance(mock_config_entry.unique_id, str)

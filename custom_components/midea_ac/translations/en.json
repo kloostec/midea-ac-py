@@ -19,7 +19,7 @@
         }
       },
       "manual": {
-        "description": "Enter information for your device.",
+        "description": "Enter information for your device. Select Toshiba IoLIFE for Japanese adapters named Toshiba_ac_*.",
         "data": {
           "id": "ID",
           "host": "Host",
@@ -131,6 +131,13 @@
     }
   },
   "selector": {
+    "device_type": {
+      "options": {
+        "AC": "Midea air conditioner",
+        "CC": "Midea commercial air conditioner",
+        "TOSHIBA_IOLIFE": "Toshiba IoLIFE (Japan)"
+      }
+    },
     "energy_data_format": {
       "options": {
         "bcd": "BCD",
@@ -339,6 +346,9 @@
       },
       "purifier": {
         "name": "Purifier"
+      },
+      "self_clean": {
+        "name": "Self clean"
       }
     }
   }

@@ -37,7 +37,8 @@ async def async_get_config_entry_diagnostics(
 
     feature_info = device.capabilities_dict()
 
-    if hasattr(device, "enable_energy_usage_requests"):
+    if (hasattr(device, "enable_energy_usage_requests")
+            and not getattr(device, "is_toshiba_iolife", False)):
         feature_info["enable_energy_usage_requests"] = device.enable_energy_usage_requests
 
     if hasattr(device, "_supported_properties"):

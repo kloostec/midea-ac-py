@@ -24,7 +24,6 @@ from homeassistant.helpers.selector import (CountrySelector,
                                             SelectSelectorMode, TextSelector,
                                             TextSelectorConfig,
                                             TextSelectorType)
-from msmart.base_device import Device
 from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
 from msmart.device import CommercialAirConditioner as CC
@@ -33,14 +32,16 @@ from msmart.lan import AuthenticationError
 
 from .const import (CONF_BEEP, CONF_CAPABILITY_OVERRIDES,
                     CONF_CLOUD_COUNTRY_CODES, CONF_DEFAULT_CLOUD_COUNTRY,
-                    CONF_DEVICE_TYPE, CONF_ENERGY_DATA_FORMAT,
-                    CONF_ENERGY_DATA_SCALE, CONF_ENERGY_SENSOR,
-                    CONF_FAN_SPEED_STEP, CONF_KEY,
+                    CONF_DEVICE_PROTOCOL, CONF_DEVICE_TYPE,
+                    CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
+                    CONF_ENERGY_SENSOR, CONF_FAN_SPEED_STEP, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME,
                     CONF_MERGE_CAPABILITY_OVERRIDES, CONF_POWER_SENSOR,
                     CONF_SWING_ANGLE_RTL, CONF_TEMP_STEP,
                     CONF_USE_FAN_ONLY_WORKAROUND, CONF_WORKAROUNDS, DOMAIN,
-                    UPDATE_INTERVAL, EnergyFormat)
+                    UPDATE_INTERVAL, DeviceProtocol, EnergyFormat)
+from .device import (DEVICE_SELECTIONS, construct_device,
+                     construct_selected_device, protocol_for_device)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Midea Smart AC."""
 
     VERSION = 1
-    MINOR_VERSION = 6
+    MINOR_VERSION = 7
 
     async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Handle a config flow initialized by the user."""
@@ -313,8 +314,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_PORT, default=6444): cv.port,
                 vol.Required(CONF_DEVICE_TYPE): SelectSelector(
                     SelectSelectorConfig(
-                        options=[f"{e.value:X}" for e in
-                                 [DeviceType.AIR_CONDITIONER, DeviceType.COMMERCIAL_AC]],
+                        options=list(DEVICE_SELECTIONS),
                         translation_key="device_type",
                         mode=SelectSelectorMode.DROPDOWN,
                     ),
@@ -348,8 +348,10 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Copy ID from existing entry
                 user_input[CONF_ID] = config_entry.data[CONF_ID]
 
-                # Convert type to hex representation
-                user_input[CONF_DEVICE_TYPE] = f"{config_entry.data[CONF_DEVICE_TYPE]:X}"
+                # Preserve type and appliance protocol from the existing entry
+                user_input[CONF_DEVICE_TYPE] = config_entry.data[CONF_DEVICE_TYPE]
+                user_input[CONF_DEVICE_PROTOCOL] = config_entry.data.get(
+                    CONF_DEVICE_PROTOCOL, DeviceProtocol.MIDEA)
 
                 # Ensure key & token are in dict
                 user_input.setdefault(CONF_KEY, None)
@@ -370,6 +372,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                         self._get_reconfigure_entry(),
                         data_updates={
                             CONF_DEVICE_TYPE: device.type,
+                            CONF_DEVICE_PROTOCOL: protocol_for_device(device),
                             CONF_ID: device.id,
                             CONF_HOST: device.ip,
                             CONF_PORT: device.port,
@@ -400,18 +403,22 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         return httpx_client.get_async_client(self.hass, *args, **kwargs)
 
     async def _test_manual_connection(self, config) -> AC | CC | None:
-        DEVICE_TYPES = {
-            "AC": DeviceType.AIR_CONDITIONER,
-            "CC": DeviceType.COMMERCIAL_AC
-        }
-
         # Construct the device
-        device = Device.construct(
-            type=DEVICE_TYPES[config.get(CONF_DEVICE_TYPE).upper()],
-            ip=config.get(CONF_HOST),
-            port=config.get(CONF_PORT),
-            device_id=int(config.get(CONF_ID)),
-        )
+        selection = config.get(CONF_DEVICE_TYPE)
+        connection = {
+            "ip": config.get(CONF_HOST),
+            "port": config.get(CONF_PORT),
+            "device_id": int(config.get(CONF_ID)),
+        }
+        if isinstance(selection, str) and selection.upper() in DEVICE_SELECTIONS:
+            device = construct_selected_device(selection, **connection)
+        else:
+            device = construct_device(
+                device_type=selection,
+                protocol=config.get(
+                    CONF_DEVICE_PROTOCOL, DeviceProtocol.MIDEA),
+                **connection,
+            )
 
         # Ensure device is a supported type
         assert isinstance(device, (AC, CC))
@@ -437,6 +444,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         # Populate config data
         data = {
             CONF_DEVICE_TYPE: device.type,
+            CONF_DEVICE_PROTOCOL: protocol_for_device(device),
             CONF_ID: device.id,
             CONF_HOST: device.ip,
             CONF_PORT: device.port,
@@ -445,9 +453,19 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         }
 
         # Build default options based on device type
-        default_options = _DEFAULT_OPTIONS
+        default_options = {**_DEFAULT_OPTIONS}
         if device.type == DeviceType.AIR_CONDITIONER:
-            default_options |= _DEFAULT_AC_OPTIONS
+            default_options |= {
+                **_DEFAULT_AC_OPTIONS,
+                CONF_ENERGY_SENSOR: {
+                    **_DEFAULT_AC_OPTIONS[CONF_ENERGY_SENSOR]},
+                CONF_POWER_SENSOR: {
+                    **_DEFAULT_AC_OPTIONS[CONF_POWER_SENSOR]},
+                CONF_WORKAROUNDS: {
+                    **_DEFAULT_AC_OPTIONS[CONF_WORKAROUNDS]},
+            }
+            if protocol_for_device(device) is DeviceProtocol.TOSHIBA_IOLIFE:
+                default_options[CONF_BEEP] = False
 
         # Create a config entry with the config data and default options
         return self.async_create_entry(title=f"{DOMAIN} {device.id}", data=data, options=default_options)
