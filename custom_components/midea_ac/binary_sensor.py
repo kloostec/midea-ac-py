@@ -64,6 +64,19 @@ async def async_setup_entry(
             ("air_clean_enabled", "air_clean_enabled", None),
             ("uvc_enabled", "uvc", None),
             ("timer_self_clean_enabled", "scheduled_cleaning", None),
+            ("vertical_swing_active", "vertical_swing",
+             BinarySensorDeviceClass.RUNNING),
+            ("horizontal_swing_active", "horizontal_swing",
+             BinarySensorDeviceClass.RUNNING),
+            ("power_on_timer_enabled", "power_on_timer", None),
+            ("power_off_timer_enabled", "power_off_timer", None),
+            ("high_temperature_monitor_enabled",
+             "high_temperature_monitor", None),
+            ("defrost_active", "defrost",
+             BinarySensorDeviceClass.RUNNING),
+            ("preheat_enabled", "preheat_enabled", None),
+            ("preheat_active", "preheat_active",
+             BinarySensorDeviceClass.RUNNING),
         ):
             if getattr(device, prop, None) is not None:
                 entities.append(MideaBinarySensor(

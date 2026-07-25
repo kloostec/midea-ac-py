@@ -6,8 +6,8 @@ import logging
 from homeassistant.components.sensor import (SensorDeviceClass, SensorEntity,
                                              SensorStateClass)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (PERCENTAGE, UnitOfEnergy, UnitOfPower,
-                                 UnitOfTemperature)
+from homeassistant.const import (PERCENTAGE, EntityCategory, UnitOfEnergy,
+                                 UnitOfPower, UnitOfTemperature, UnitOfTime)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from msmart.utils import MideaIntEnum
@@ -60,6 +60,50 @@ async def async_setup_entry(
             PERCENTAGE,
             "indoor_humidity",
         ))
+
+    if getattr(device, "is_toshiba_iolife", False):
+        for prop, translation_key in (
+            ("actual_fan_speed", "actual_fan_speed"),
+            ("vertical_deflector_position",
+             "vertical_deflector_position"),
+            ("horizontal_deflector_position",
+             "horizontal_deflector_position"),
+            ("high_temperature_monitor_status",
+             "high_temperature_monitor_status"),
+            ("dehumidification_mode", "dehumidification_mode"),
+            ("advanced_no_wind_mode", "advanced_no_wind_mode"),
+            ("wind_radar_mode", "wind_radar_mode"),
+            ("area_mode", "area_mode"),
+            ("air_monitor_status", "air_monitor_status"),
+            ("radar_zone_mask", "radar_zone_mask"),
+        ):
+            if getattr(device, prop, None) is not None:
+                entities.append(MideaSensor(
+                    coordinator,
+                    prop,
+                    None,
+                    None,
+                    translation_key,
+                    state_class=None,
+                    entity_category=EntityCategory.DIAGNOSTIC,
+                ))
+
+        for prop, enabled_prop, translation_key in (
+            ("power_on_timer_minutes", "power_on_timer_enabled",
+             "power_on_timer"),
+            ("power_off_timer_minutes", "power_off_timer_enabled",
+             "power_off_timer"),
+        ):
+            if getattr(device, enabled_prop, None) is not None:
+                entities.append(MideaSensor(
+                    coordinator,
+                    prop,
+                    SensorDeviceClass.DURATION,
+                    UnitOfTime.MINUTES,
+                    translation_key,
+                    state_class=None,
+                    entity_category=EntityCategory.DIAGNOSTIC,
+                ))
 
     # Only add energy sensors if device supports energy requests
     if (hasattr(device, "enable_energy_usage_requests")
@@ -139,7 +183,8 @@ class MideaSensor(MideaCoordinatorEntity, SensorEntity):
                  unit: str | None,
                  translation_key: str | None = None,
                  *,
-                 state_class: SensorStateClass = SensorStateClass.MEASUREMENT,
+                 state_class: SensorStateClass | None = SensorStateClass.MEASUREMENT,
+                 entity_category: EntityCategory | None = None,
                  ) -> None:
         MideaCoordinatorEntity.__init__(self, coordinator)
 
@@ -147,6 +192,7 @@ class MideaSensor(MideaCoordinatorEntity, SensorEntity):
         self._device_class = device_class
         self._state_class = state_class
         self._unit = unit
+        self._entity_category = entity_category
         self._attr_translation_key = translation_key
 
     @property
@@ -181,9 +227,14 @@ class MideaSensor(MideaCoordinatorEntity, SensorEntity):
         return self._device_class
 
     @property
-    def state_class(self) -> str:
+    def state_class(self) -> str | None:
         """Return the state class of this entity."""
         return self._state_class
+
+    @property
+    def entity_category(self) -> str | None:
+        """Return the entity category of this entity."""
+        return self._entity_category
 
     @property
     def native_unit_of_measurement(self) -> str:

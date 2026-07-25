@@ -13,6 +13,27 @@
       "cleaning_cycle": {
         "default": "mdi:spray-bottle"
       },
+      "defrost": {
+        "default": "mdi:snowflake-melt"
+      },
+      "high_temperature_monitor": {
+        "default": "mdi:thermometer-alert"
+      },
+      "horizontal_swing": {
+        "default": "mdi:arrow-left-right"
+      },
+      "power_off_timer": {
+        "default": "mdi:timer-off-outline"
+      },
+      "power_on_timer": {
+        "default": "mdi:timer-outline"
+      },
+      "preheat_active": {
+        "default": "mdi:radiator"
+      },
+      "preheat_enabled": {
+        "default": "mdi:radiator"
+      },
       "quick_mode": {
         "default": "mdi:rocket-launch"
       },
@@ -27,6 +48,9 @@
       },
       "uvc": {
         "default": "mdi:lightbulb-on"
+      },
+      "vertical_swing": {
+        "default": "mdi:arrow-up-down"
       },
       "way_out": {
         "default": "mdi:home-export-outline"
@@ -76,8 +100,44 @@
       }
     },
     "sensor": {
+      "actual_fan_speed": {
+        "default": "mdi:fan"
+      },
+      "advanced_no_wind_mode": {
+        "default": "mdi:weather-windy"
+      },
+      "air_monitor_status": {
+        "default": "mdi:air-filter"
+      },
+      "area_mode": {
+        "default": "mdi:radar"
+      },
+      "dehumidification_mode": {
+        "default": "mdi:water-percent"
+      },
+      "high_temperature_monitor_status": {
+        "default": "mdi:thermometer-alert"
+      },
+      "horizontal_deflector_position": {
+        "default": "mdi:arrow-left-right"
+      },
       "outdoor_temperature": {
         "default": "mdi:sun-thermometer"
+      },
+      "power_off_timer": {
+        "default": "mdi:timer-off-outline"
+      },
+      "power_on_timer": {
+        "default": "mdi:timer-outline"
+      },
+      "radar_zone_mask": {
+        "default": "mdi:radar"
+      },
+      "vertical_deflector_position": {
+        "default": "mdi:arrow-up-down"
+      },
+      "wind_radar_mode": {
+        "default": "mdi:radar"
       }
     },
     "switch": {

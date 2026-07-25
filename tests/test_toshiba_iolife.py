@@ -18,6 +18,8 @@ from custom_components.midea_ac.const import (CONF_BEEP, CONF_DEVICE_PROTOCOL,
 from custom_components.midea_ac.device import (construct_device,
                                                construct_selected_device,
                                                protocol_for_device)
+from custom_components.midea_ac.sensor import \
+    async_setup_entry as async_setup_sensors
 from custom_components.midea_ac.switch import MideaMethodSwitch
 
 
@@ -147,7 +149,21 @@ async def test_extended_toshiba_binary_sensors(
         ToshibaProperty.WAY_OUT,
         ToshibaProperty.AIR_CLEAN_SWITCH,
         ToshibaProperty.TIMER_SELF_CLEAN,
+        ToshibaProperty.WIND_DEFLECTOR,
+        ToshibaProperty.POWER_ON_TIMER,
+        ToshibaProperty.POWER_OFF_TIMER,
+        ToshibaProperty.HIGH_TEMPERATURE_MONITOR,
     })
+    device._vertical_deflector_position = 25
+    device._horizontal_deflector_position = 1
+    device._vertical_swing_active = True
+    device._horizontal_swing_active = True
+    device._power_on_timer_enabled = False
+    device._power_off_timer_enabled = False
+    device._high_temperature_monitor_enabled = False
+    device._defrost_active = False
+    device._preheat_enabled = False
+    device._preheat_active = False
     device._quick_mode = False
     device._air_monitor_enabled = True
     device._radar_active = True
@@ -182,6 +198,77 @@ async def test_extended_toshiba_binary_sensors(
         "air_clean_enabled",
         "uvc",
         "scheduled_cleaning",
+        "vertical_swing",
+        "horizontal_swing",
+        "power_on_timer",
+        "power_off_timer",
+        "high_temperature_monitor",
+        "defrost",
+        "preheat_enabled",
+        "preheat_active",
+    } <= translation_keys
+
+
+async def test_toshiba_telemetry_sensors(
+    hass: HomeAssistant,
+) -> None:
+    """Confirmed Toshiba telemetry becomes read-only diagnostic sensors."""
+    device = ToshibaIoLifeAirConditioner(
+        ip="127.0.0.1", port=6444, device_id=4321)
+    device._has_extended_state = True
+    device._supported_toshiba_properties.update({
+        ToshibaProperty.FAN_SPEED_REAL,
+        ToshibaProperty.WIND_DEFLECTOR,
+        ToshibaProperty.POWER_ON_TIMER,
+        ToshibaProperty.POWER_OFF_TIMER,
+        ToshibaProperty.HIGH_TEMPERATURE_MONITOR,
+        ToshibaProperty.DEHUMIDIFY,
+        ToshibaProperty.NEW_NO_WIND_SENSE,
+        ToshibaProperty.WIND_RADAR,
+        ToshibaProperty.AREA,
+    })
+    device._actual_fan_speed = 20
+    device._vertical_deflector_position = 25
+    device._horizontal_deflector_position = 1
+    device._power_on_timer_enabled = False
+    device._power_off_timer_enabled = False
+    device._high_temperature_monitor_status = 0
+    device._dehumidification_mode = 1
+    device._advanced_no_wind_mode = 0
+    device._wind_radar_mode = 0
+    device._area_mode = 0
+    device._air_monitor_status = 1
+    device._radar_zone_mask = 0
+    coordinator = MagicMock()
+    coordinator.device = device
+    config_entry = MagicMock()
+    config_entry.entry_id = "toshiba-k-dr-sensors"
+    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = coordinator
+    entities = []
+
+    await async_setup_sensors(
+        hass,
+        config_entry,
+        entities.extend,
+    )
+
+    translation_keys = {
+        entity.translation_key
+        for entity in entities
+    }
+    assert {
+        "actual_fan_speed",
+        "vertical_deflector_position",
+        "horizontal_deflector_position",
+        "power_on_timer",
+        "power_off_timer",
+        "high_temperature_monitor_status",
+        "dehumidification_mode",
+        "advanced_no_wind_mode",
+        "wind_radar_mode",
+        "area_mode",
+        "air_monitor_status",
+        "radar_zone_mask",
     } <= translation_keys
 
 
@@ -201,6 +288,14 @@ async def test_unsupported_extended_toshiba_binary_sensors_are_omitted(
     device._air_clean_enabled = True
     device._uvc_enabled = True
     device._timer_self_clean_enabled = True
+    device._vertical_swing_active = True
+    device._horizontal_swing_active = True
+    device._power_on_timer_enabled = True
+    device._power_off_timer_enabled = True
+    device._high_temperature_monitor_enabled = True
+    device._defrost_active = True
+    device._preheat_enabled = True
+    device._preheat_active = True
     coordinator = MagicMock()
     coordinator.device = device
     config_entry = MagicMock()
@@ -223,6 +318,14 @@ async def test_unsupported_extended_toshiba_binary_sensors_are_omitted(
         "air_clean_enabled",
         "uvc",
         "scheduled_cleaning",
+        "vertical_swing",
+        "horizontal_swing",
+        "power_on_timer",
+        "power_off_timer",
+        "high_temperature_monitor",
+        "defrost",
+        "preheat_enabled",
+        "preheat_active",
     }
     assert extended_translation_keys.isdisjoint({
         entity.translation_key

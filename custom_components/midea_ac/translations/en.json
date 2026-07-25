@@ -212,6 +212,24 @@
       "filter_alert": {
         "name": "Filter alert"
       },
+      "high_temperature_monitor": {
+        "name": "High-temperature monitor"
+      },
+      "horizontal_swing": {
+        "name": "Horizontal sweep"
+      },
+      "power_off_timer": {
+        "name": "Power-off timer"
+      },
+      "power_on_timer": {
+        "name": "Power-on timer"
+      },
+      "preheat_active": {
+        "name": "Preheating"
+      },
+      "preheat_enabled": {
+        "name": "Preheat enabled"
+      },
       "quick_mode": {
         "name": "Quick mode"
       },
@@ -226,6 +244,9 @@
       },
       "uvc": {
         "name": "UV-C"
+      },
+      "vertical_swing": {
+        "name": "Vertical sweep"
       },
       "way_out": {
         "name": "Away mode"
@@ -330,6 +351,18 @@
       }
     },
     "sensor": {
+      "actual_fan_speed": {
+        "name": "Actual fan speed"
+      },
+      "advanced_no_wind_mode": {
+        "name": "Advanced no-wind mode"
+      },
+      "air_monitor_status": {
+        "name": "Air monitor status"
+      },
+      "area_mode": {
+        "name": "Radar area mode"
+      },
       "current_energy_usage": {
         "name": "Current energy"
       },
@@ -339,17 +372,41 @@
       "indoor_temperature": {
         "name": "Indoor temperature"
       },
+      "dehumidification_mode": {
+        "name": "Dehumidification mode"
+      },
+      "high_temperature_monitor_status": {
+        "name": "High-temperature monitor status"
+      },
+      "horizontal_deflector_position": {
+        "name": "Horizontal deflector position"
+      },
       "outdoor_fan_speed": {
         "name": "Outdoor fan speed"
       },
       "outdoor_temperature": {
         "name": "Outdoor temperature"
       },
+      "power_off_timer": {
+        "name": "Power-off timer duration"
+      },
+      "power_on_timer": {
+        "name": "Power-on timer duration"
+      },
+      "radar_zone_mask": {
+        "name": "Radar zone mask"
+      },
       "real_time_power_usage": {
         "name": "Power"
       },
       "total_energy_usage": {
         "name": "Total energy"
+      },
+      "vertical_deflector_position": {
+        "name": "Vertical deflector position"
+      },
+      "wind_radar_mode": {
+        "name": "Radar airflow mode"
       }
     },
     "switch": {

@@ -82,6 +82,11 @@ RAS-K221DRBK(W): heating, cooling, auto, dry and fan modes; target and indoor
 temperature; humidity; all fan speeds; horizontal/vertical sweep; eco;
 purifier; breezeless mode; 50% rate selection; filter state; and a cleaning
 preference that runs after shutdown, with separate running-state feedback.
+Supported sweep axes are detected per model.
+
+Read-only diagnostic entities report actual fan speed, individual sweep
+activity, available deflector positions, power timers, and high-temperature
+monitoring.
 
 Display state is readable, but these adapters ignore display writes, so a
 display switch is not created. Unsupported Midea-only entities such as sleep,
@@ -89,8 +94,10 @@ turbo, follow-me, energy statistics, and auxiliary heat are also omitted.
 
 K-DR models expose their additional IoLIFE status in Home Assistant, including
 quick mode, air monitor, radar, away mode, air-clean state, UV-C, and scheduled
-cleaning. These model-specific entities are diagnostic and read-only until the
-control value ranges have been verified without risking unintended operation.
+cleaning. Numeric operating modes, radar-zone occupancy, defrost, and preheat
+status are also exposed. These model-specific entities are diagnostic and
+read-only until the control value ranges have been verified without risking
+unintended operation.
 
 ## Translations
 Thanks to the community the integration is available in the following languages.
