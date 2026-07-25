@@ -13,7 +13,7 @@
     "msmart"
   ],
   "requirements": [
-    "msmart-ng@git+https://github.com/kloostec/midea-msmart.git@4c3303a493a80fa5c3047755798a116c4c30afee",
+    "msmart-ng@git+https://github.com/kloostec/midea-msmart.git@a14fd001be627fe5a5f266ca82f272ea4822b6f4",
     "pyyaml"
   ],
   "version": "2026.7.2"

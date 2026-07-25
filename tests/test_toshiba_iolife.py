@@ -7,7 +7,7 @@ from homeassistant.components.climate.const import PRESET_SLEEP
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 from msmart.const import DeviceType
-from msmart.device import ToshibaIoLifeAirConditioner
+from msmart.device import ToshibaIoLifeAirConditioner, ToshibaProperty
 
 from custom_components.midea_ac.binary_sensor import \
     async_setup_entry as async_setup_binary_sensors
@@ -140,6 +140,14 @@ async def test_extended_toshiba_binary_sensors(
     """K-DR extended states become read-only diagnostic entities."""
     device = ToshibaIoLifeAirConditioner(
         ip="127.0.0.1", port=6444, device_id=1234)
+    device._has_extended_state = True
+    device._supported_toshiba_properties.update({
+        ToshibaProperty.QUICK_MODE,
+        ToshibaProperty.WIND_RADAR,
+        ToshibaProperty.WAY_OUT,
+        ToshibaProperty.AIR_CLEAN_SWITCH,
+        ToshibaProperty.TIMER_SELF_CLEAN,
+    })
     device._quick_mode = False
     device._air_monitor_enabled = True
     device._radar_active = True
@@ -175,3 +183,48 @@ async def test_extended_toshiba_binary_sensors(
         "uvc",
         "scheduled_cleaning",
     } <= translation_keys
+
+
+async def test_unsupported_extended_toshiba_binary_sensors_are_omitted(
+    hass: HomeAssistant,
+) -> None:
+    """Reserved state bits cannot enable features absent from the model."""
+    device = ToshibaIoLifeAirConditioner(
+        ip="127.0.0.1", port=6444, device_id=5678)
+    # Simulate stale or incorrectly parsed internal values. Public state must
+    # remain unknown unless the appliance confirms extended-state support.
+    device._quick_mode = True
+    device._air_monitor_enabled = True
+    device._radar_active = True
+    device._way_out_enabled = True
+    device._air_clean_active = True
+    device._air_clean_enabled = True
+    device._uvc_enabled = True
+    device._timer_self_clean_enabled = True
+    coordinator = MagicMock()
+    coordinator.device = device
+    config_entry = MagicMock()
+    config_entry.entry_id = "toshiba-j-dt"
+    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = coordinator
+    entities = []
+
+    await async_setup_binary_sensors(
+        hass,
+        config_entry,
+        entities.extend,
+    )
+
+    extended_translation_keys = {
+        "quick_mode",
+        "air_monitor",
+        "radar",
+        "way_out",
+        "air_clean",
+        "air_clean_enabled",
+        "uvc",
+        "scheduled_cleaning",
+    }
+    assert extended_translation_keys.isdisjoint({
+        entity.translation_key
+        for entity in entities
+    })
