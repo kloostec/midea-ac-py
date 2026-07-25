@@ -54,6 +54,26 @@ async def async_setup_entry(
                                           entity_category=EntityCategory.DIAGNOSTIC,
                                           ))
 
+    if getattr(device, "is_toshiba_iolife", False):
+        for prop, translation_key, device_class in (
+            ("quick_mode", "quick_mode", BinarySensorDeviceClass.RUNNING),
+            ("air_monitor_enabled", "air_monitor", None),
+            ("radar_active", "radar", BinarySensorDeviceClass.RUNNING),
+            ("way_out_enabled", "way_out", None),
+            ("air_clean_active", "air_clean", BinarySensorDeviceClass.RUNNING),
+            ("air_clean_enabled", "air_clean_enabled", None),
+            ("uvc_enabled", "uvc", None),
+            ("timer_self_clean_enabled", "scheduled_cleaning", None),
+        ):
+            if getattr(device, prop, None) is not None:
+                entities.append(MideaBinarySensor(
+                    coordinator,
+                    prop,
+                    device_class,
+                    translation_key,
+                    entity_category=EntityCategory.DIAGNOSTIC,
+                ))
+
     if (hasattr(device, "defrost_active")
             and hasattr(device, "enable_group5_data_requests")
             and not getattr(device, "is_toshiba_iolife", False)):
@@ -72,7 +92,7 @@ class MideaBinarySensor(MideaCoordinatorEntity, BinarySensorEntity):
     def __init__(self,
                  coordinator: MideaDeviceUpdateCoordinator,
                  prop: str,
-                 device_class: BinarySensorDeviceClass,
+                 device_class: BinarySensorDeviceClass | None,
                  translation_key: str | None = None,
                  *,
                  entity_category: EntityCategory = None) -> None:

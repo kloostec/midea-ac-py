@@ -9,6 +9,8 @@ from homeassistant.data_entry_flow import FlowResultType
 from msmart.const import DeviceType
 from msmart.device import ToshibaIoLifeAirConditioner
 
+from custom_components.midea_ac.binary_sensor import \
+    async_setup_entry as async_setup_binary_sensors
 from custom_components.midea_ac.climate import MideaClimateACDevice
 from custom_components.midea_ac.const import (CONF_BEEP, CONF_DEVICE_PROTOCOL,
                                               CONF_DEVICE_TYPE, DOMAIN,
@@ -130,3 +132,46 @@ async def test_automatic_cleaning_method_switch() -> None:
     await entity.async_turn_off()
     device.disable_automatic_cleaning.assert_awaited_once()
     assert coordinator.async_request_refresh.await_count == 2
+
+
+async def test_extended_toshiba_binary_sensors(
+    hass: HomeAssistant,
+) -> None:
+    """K-DR extended states become read-only diagnostic entities."""
+    device = ToshibaIoLifeAirConditioner(
+        ip="127.0.0.1", port=6444, device_id=1234)
+    device._quick_mode = False
+    device._air_monitor_enabled = True
+    device._radar_active = True
+    device._way_out_enabled = False
+    device._air_clean_active = False
+    device._air_clean_enabled = False
+    device._uvc_enabled = True
+    device._timer_self_clean_enabled = False
+    coordinator = MagicMock()
+    coordinator.device = device
+    config_entry = MagicMock()
+    config_entry.entry_id = "toshiba-k-dr"
+    hass.data.setdefault(DOMAIN, {})[config_entry.entry_id] = coordinator
+    entities = []
+
+    await async_setup_binary_sensors(
+        hass,
+        config_entry,
+        entities.extend,
+    )
+
+    translation_keys = {
+        entity.translation_key
+        for entity in entities
+    }
+    assert {
+        "quick_mode",
+        "air_monitor",
+        "radar",
+        "way_out",
+        "air_clean",
+        "air_clean_enabled",
+        "uvc",
+        "scheduled_cleaning",
+    } <= translation_keys

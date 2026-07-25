@@ -1,11 +1,35 @@
 {
   "entity": {
     "binary_sensor": {
+      "air_clean": {
+        "default": "mdi:air-purifier"
+      },
+      "air_clean_enabled": {
+        "default": "mdi:air-purifier"
+      },
+      "air_monitor": {
+        "default": "mdi:air-filter"
+      },
       "cleaning_cycle": {
         "default": "mdi:spray-bottle"
       },
+      "quick_mode": {
+        "default": "mdi:rocket-launch"
+      },
+      "radar": {
+        "default": "mdi:radar"
+      },
+      "scheduled_cleaning": {
+        "default": "mdi:calendar-sync"
+      },
       "self_clean": {
         "default": "mdi:spray-bottle"
+      },
+      "uvc": {
+        "default": "mdi:lightbulb-on"
+      },
+      "way_out": {
+        "default": "mdi:home-export-outline"
       }
     },
     "climate": {

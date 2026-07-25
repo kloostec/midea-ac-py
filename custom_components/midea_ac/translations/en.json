@@ -197,14 +197,38 @@
       }
     },
     "binary_sensor": {
+      "air_clean": {
+        "name": "Air cleaning"
+      },
+      "air_clean_enabled": {
+        "name": "Air cleaning enabled"
+      },
+      "air_monitor": {
+        "name": "Air monitor"
+      },
       "cleaning_cycle": {
         "name": "Cleaning cycle"
       },
       "filter_alert": {
         "name": "Filter alert"
       },
+      "quick_mode": {
+        "name": "Quick mode"
+      },
+      "radar": {
+        "name": "Radar"
+      },
+      "scheduled_cleaning": {
+        "name": "Scheduled cleaning"
+      },
       "self_clean": {
         "name": "Self clean"
+      },
+      "uvc": {
+        "name": "UV-C"
+      },
+      "way_out": {
+        "name": "Away mode"
       },
       "defrost": {
         "name": "Defrost"

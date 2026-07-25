@@ -87,6 +87,11 @@ Display state is readable, but these adapters ignore display writes, so a
 display switch is not created. Unsupported Midea-only entities such as sleep,
 turbo, follow-me, energy statistics, and auxiliary heat are also omitted.
 
+K-DR models expose their additional IoLIFE status in Home Assistant, including
+quick mode, air monitor, radar, away mode, air-clean state, UV-C, and scheduled
+cleaning. These model-specific entities are diagnostic and read-only until the
+control value ranges have been verified without risking unintended operation.
+
 ## Translations
 Thanks to the community the integration is available in the following languages.
   * български
